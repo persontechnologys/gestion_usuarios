@@ -1,0 +1,75 @@
+# =========================================================
+# gestion_usuarios - Orquestación de los 3 contenedores
+# Los valores ${...} se leen del archivo .env de esta carpeta
+# =========================================================
+
+services:
+
+  # ---------- Base de datos ----------
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql        # los datos sobreviven aunque se borre el contenedor
+    healthcheck:                          # "sano" solo cuando MySQL acepta conexiones
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    # Sin "ports": MySQL NO se expone fuera de Docker, solo el backend lo ve
+
+  # ---------- API Laravel ----------
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy        # espera a que MySQL esté listo
+    environment:
+      APP_NAME: "Gestion Usuarios API"
+      APP_ENV: production
+      APP_DEBUG: ${APP_DEBUG:-false}
+      APP_KEY: ${BACKEND_APP_KEY}
+      APP_URL: ${BACKEND_URL}
+      LOG_CHANNEL: stderr                 # logs visibles con "docker compose logs"
+      DB_CONNECTION: mysql
+      DB_HOST: mysql                      # nombre del servicio, no 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      SESSION_DRIVER: database
+      CACHE_STORE: database
+      QUEUE_CONNECTION: sync
+      SANCTUM_EXPIRATION: 120
+    ports:
+      - "${BACKEND_PORT:-8000}:80"        # expuesto para probar con Postman
+
+  # ---------- Frontend Laravel (Blade) ----------
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      APP_NAME: "Gestion Usuarios"
+      APP_ENV: production
+      APP_DEBUG: ${APP_DEBUG:-false}
+      APP_KEY: ${FRONTEND_APP_KEY}
+      APP_URL: ${FRONTEND_URL}
+      LOG_CHANNEL: stderr
+      SESSION_DRIVER: file
+      CACHE_STORE: file
+      QUEUE_CONNECTION: sync
+      BACKEND_API_URL: http://backend/api # red interna de Docker
+      BACKEND_API_TIMEOUT: 10
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+
+volumes:
+  mysql_data:

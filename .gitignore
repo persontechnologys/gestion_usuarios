@@ -1,0 +1,8 @@
+# Variables con secretos de docker-compose
+.env
+
+# Archivos del sistema y editores
+Thumbs.db
+.DS_Store
+.vscode/
+.idea/
