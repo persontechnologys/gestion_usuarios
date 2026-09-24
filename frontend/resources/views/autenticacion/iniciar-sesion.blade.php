@@ -21,10 +21,10 @@
         @csrf
 
         {{-- Muestra el campo del correo electrónico con su valor anterior y su error. --}}
-        <x-campo-formulario nombre="correo_electronico" etiqueta="Correo electrónico" tipo="email" autocomplete="email" required autofocus />
+        <x-campo-formulario nombre="correo_electronico" placeholder="correo@ejemplo.com" etiqueta="Correo electrónico" tipo="email" autocomplete="email" required autofocus />
 
         {{-- Muestra el campo de la contraseña y su error. --}}
-        <x-campo-formulario nombre="contrasena" etiqueta="Contraseña" tipo="password" autocomplete="current-password" required />
+        <x-campo-formulario nombre="contrasena" placeholder="••••••••" etiqueta="Contraseña" tipo="password" autocomplete="current-password" required />
 
         {{-- Muestra el botón que envía las credenciales. --}}
         <x-boton class="w-full">Iniciar sesión</x-boton>
