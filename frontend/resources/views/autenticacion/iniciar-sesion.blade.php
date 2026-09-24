@@ -9,7 +9,7 @@
     {{-- Muestra el encabezado de la página. --}}
     <div class="space-y-1">
         {{-- Muestra el título principal. --}}
-        <h1 class="text-2xl font-semibold text-slate-900">Iniciar sesión</h1>
+        <h1 class="text-2xl font-semibold text-slate-900">Iniciar sesión en la app</h1>
         {{-- Muestra una breve indicación para el usuario. --}}
         <p class="text-sm text-slate-500">Ingrese su correo electrónico y su contraseña.</p>
     </div>
