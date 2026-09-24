@@ -65,7 +65,7 @@ class AutenticacionService
             // Lanza un error de validación genérico para no revelar qué dato es incorrecto.
             throw ValidationException::withMessages([
                 // Asocia el mensaje de error al campo de correo electrónico.
-                'correo_electronico' => ['Las credenciales proporcionadas son incorrectas.'],
+                'correo_electronico' => ['Las credenciales proporcionadas son incorrectas en la app.'],
             ]);
         }
 
