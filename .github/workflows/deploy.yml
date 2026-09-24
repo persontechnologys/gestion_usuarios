@@ -1,0 +1,66 @@
+# =========================================================
+# Pipeline CI/CD - gestion_usuarios
+# CI: ejecuta las pruebas. CD: si pasan, despliega en el VPS.
+# =========================================================
+name: CI/CD gestion_usuarios
+
+on:
+  push:
+    branches: [main]          # se ejecuta en cada push a main
+
+jobs:
+
+  # ---------- CI: Integración continua ----------
+  pruebas:
+    name: CI - Pruebas automáticas
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Instalar PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_sqlite
+
+      - name: Backend - instalar dependencias
+        working-directory: backend
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Backend - pruebas de la API
+        working-directory: backend
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          php artisan test tests/Feature/Api
+
+      - name: Frontend - instalar dependencias
+        working-directory: frontend
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Frontend - pruebas
+        working-directory: frontend
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          php artisan test
+
+  # ---------- CD: Despliegue continuo ----------
+  despliegue:
+    name: CD - Despliegue en VPS Contabo
+    needs: pruebas            # solo corre si las pruebas pasaron
+    runs-on: ubuntu-latest
+    steps:
+      - name: Conectarse por SSH y desplegar
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd ~/gestion_usuarios
+            git pull origin main
+            docker compose up -d --build
+            docker compose exec -T backend php artisan migrate --force
+            docker image prune -f
