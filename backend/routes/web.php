@@ -4,7 +4,12 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('welcome');
+    //return Inertia::render('welcome');
+    return response()->json([
+        'aplicacion' => 'API Gestión de Usuarios',
+        'estado' => 'en línea',
+        'documentacion' => '/api',
+    ]);
 })->name('home');
 
 Route::middleware(['auth'])->group(function () {
